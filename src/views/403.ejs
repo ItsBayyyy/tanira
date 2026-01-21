@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TANIRA - Akses Ditolak</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/output.css">
+    <link rel="stylesheet" href="/css/custom.css">
+</head>
+<body class="font-sans text-tanira-dark bg-tanira-cream antialiased selection:bg-tanira-green selection:text-white bg-pattern-leaf h-screen flex items-center justify-center overflow-hidden">
+
+    <div class="max-w-4xl mx-auto px-6 py-12 relative z-10 text-center">
+        
+        <!-- Illustration Area -->
+        <div class="relative mb-8 inline-block">
+            <!-- Main 403 Text -->
+            <h1 class="text-9xl md:text-[12rem] font-bold text-tanira-brown/10 select-none">403</h1>
+            
+            <!-- Overlay Image/Icon -->
+            <div class="absolute inset-0 flex items-center justify-center">
+                <div class="w-32 h-32 md:w-40 md:h-40 bg-white rounded-full shadow-xl flex items-center justify-center border-4 border-tanira-cream animate-bounce" style="animation-duration: 3s;">
+                    <!-- Gembok Icon -->
+                    <i class="fa-solid fa-user-lock text-6xl md:text-7xl text-tanira-brown"></i>
+                </div>
+            </div>
+            
+            <!-- Floating Elements (Sign Warning) -->
+            <div class="absolute top-1/4 -right-4 md:-right-12 animate-pulse" style="animation-duration: 2s;">
+                <i class="fa-solid fa-ban text-red-400 text-5xl opacity-80 rotate-12"></i>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="space-y-6 relative z-20">
+            <h2 class="text-3xl md:text-4xl font-bold text-tanira-dark">
+                Area Terbatas! 🚧
+            </h2>
+            <p class="text-tanira-gray text-lg max-w-lg mx-auto leading-relaxed">
+                Maaf, Anda tidak memiliki izin untuk memasuki lahan ini. <br>
+                Silakan kembali ke area yang sesuai dengan peran Anda.
+            </p>
+
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mt-8">
+                <a href="/" class="px-8 py-4 bg-tanira-green hover:bg-tanira-greenDark text-white rounded-xl font-bold transition shadow-lg shadow-tanira-green/30 flex items-center gap-2 group">
+                    <i class="fa-solid fa-house"></i> Kembali ke Beranda
+                </a>
+                
+                <!-- Tombol Login (Opsional, jika user ingin ganti akun) -->
+                <a href="/auth/login" class="px-8 py-4 bg-white border border-gray-200 hover:bg-gray-50 text-tanira-gray rounded-xl font-bold transition flex items-center gap-2">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Ganti Akun
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>
