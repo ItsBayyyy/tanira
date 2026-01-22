@@ -52,7 +52,4 @@ app.use((req, res, next) => {
   res.status(404).render('404');
 });
 
-// Start Server
-app.listen(PORT, () => {
-    console.log(`Server running at http://localhost:${PORT}`);
-});
+module.exports = app

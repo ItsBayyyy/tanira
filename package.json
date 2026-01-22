@@ -4,8 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon src/app.js",
-    "tailwind": "npx tailwindcss@3 -i ./src/public/css/input.css -o ./src/public/css/output.css --watch"
+    "dev": "nodemon src/server.js",
+    "tailwind": "npx tailwindcss@3 -i ./src/public/css/input.css -o ./src/public/css/output.css --watch",
+    "build": "prisma generate",
+    "start": "node src/server.js"
   },
   "keywords": [],
   "author": "",
