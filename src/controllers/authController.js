@@ -378,7 +378,9 @@ exports.submitOnboarding = async (req, res) => {
     if (!req.session.userId) return res.status(401).json({ message: 'Unauthorized' });
 
     try {
-        const { role, fullname, location } = req.body; // Location bisa disimpan di FarmerProfile jika perlu
+        // UPDATE: Menerima 'fullname', 'phone', 'province'
+        // 'location' di form onboarding sebelumnya kita ubah jadi 'province' biar match
+        const { role, fullname, phone, province } = req.body; 
 
         // Validasi Role
         const validRoles = ['petani', 'pembeli', 'penyedia'];
@@ -391,7 +393,9 @@ exports.submitOnboarding = async (req, res) => {
             where: { id: req.session.userId },
             data: {
                 role: role,
-                name: fullname, 
+                name: fullname,
+                phone: phone,       // Simpan Phone
+                province: province  // Simpan Province
             }
         });
 

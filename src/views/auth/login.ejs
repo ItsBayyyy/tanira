@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= title %> - TANIRA</title>
+    <link rel="icon" href="/logo/logo.png" type="image/png">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
@@ -21,9 +22,11 @@
             
             <div class="relative z-10 p-12 text-white max-w-lg">
                 <div class="flex items-center gap-3 mb-8">
-                    <div class="w-10 h-10 bg-tanira-green rounded-xl flex items-center justify-center overflow-hidden text-white border border-white/20">
-                        <i class="fa-solid fa-leaf text-xl"></i>
-                    </div>
+                    <!-- UBAH DISINI: Ganti Icon dengan Logo Foto -->
+                    <img src="/logo/logo.png" 
+                         alt="Logo TANIRA" 
+                         class="w-12 h-12 rounded-xl object-contain bg-white backdrop-blur-sm border border-white/20 p-1">
+                    
                     <span class="text-2xl font-bold tracking-tight">TANIRA</span>
                 </div>    
                 
@@ -47,6 +50,10 @@
             <div class="w-full max-w-md">
                 <div class="lg:hidden flex justify-center mb-8">
                     <div class="flex items-center gap-2">
+                        <!-- UBAH DISINI: Menambahkan Logo di tampilan Mobile -->
+                        <img src="/logo/logo.png" 
+                             alt="Logo TANIRA" 
+                             class="w-10 h-10 rounded-lg object-contain p-1">
                         <span class="font-bold text-2xl tracking-tight text-tanira-green">TANIRA</span>
                     </div>
                 </div>
@@ -116,16 +123,12 @@
                 </div>
 
                 <!-- Social Login (Mockup) -->
-                <div class="grid grid-cols-2 gap-4">
+                <!-- <div class="grid grid-cols-4 gap-4">
                     <button class="flex items-center justify-center gap-2 py-3 border border-gray-200 rounded-xl hover:bg-white transition-colors bg-white shadow-sm">
                         <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5" alt="Google">
                         <span class="text-sm font-bold text-tanira-gray">Google</span>
                     </button>
-                    <button class="flex items-center justify-center gap-2 py-3 border border-gray-200 rounded-xl hover:bg-white transition-colors bg-white shadow-sm">
-                        <img src="https://www.svgrepo.com/show/475647/facebook-color.svg" class="w-5 h-5" alt="Facebook">
-                        <span class="text-sm font-bold text-tanira-gray">Facebook</span>
-                    </button>
-                </div>
+                </div> -->
 
                 <p class="text-center text-sm text-tanira-gray mt-8">
                     Belum punya akun? 

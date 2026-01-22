@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link rel="icon" href="/logo/logo.png" type="image/png">
+    
+    <!-- Fonts: Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Icons: FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        tanira: {
+                            green: '#2F7D32', greenLight: '#E8F5E9', greenDark: '#1B5E20',
+                            brown: '#6D4C41', cream: '#F9F7F2', dark: '#1F2937',
+                            gray: '#6B7280', accent: '#F59E0B', surface: '#FFFFFF',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.05)',
+                        'card': '0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-enter { animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
+        .delay-100 { animation-delay: 100ms; } .delay-200 { animation-delay: 200ms; } .delay-300 { animation-delay: 300ms; }
+        .dashboard-card { transition: all 0.3s ease; }
+        .dashboard-card:hover { transform: translateY(-4px); box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.1); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="bg-tanira-cream text-tanira-dark font-sans min-h-screen pb-24 md:pb-10">
+
+    <!-- NAVIGATION (Desktop) -->
+    <nav class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100 px-6 py-4 hidden md:block">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <img src="/logo/logo.png" 
+                         onerror="this.src='https://placehold.co/40x40/2f7d32/ffffff?text=T'"
+                         alt="Logo TANIRA" 
+                         class="w-10 h-10 rounded-lg object-contain p-1">
+                <span class="font-bold text-xl text-tanira-brown">TANIRA <span class="text-xs font-medium bg-tanira-brown/10 px-2 py-0.5 rounded text-tanira-brown ml-1">Mitra</span></span>
+            </div>
+            <div class="flex gap-8 text-sm font-medium text-tanira-gray">
+                <a href="/producer" class="text-tanira-brown font-bold">Dashboard</a>
+                <a href="/producer/my-tools" class="hover:text-tanira-brown transition">Inventaris Alat</a>
+                <a href="/producer/requests" class="hover:text-tanira-brown transition">Pesanan Masuk</a>
+                <!-- UPDATE: Tambah Link ke Marketplace -->
+                <a href="/market" class="hover:text-tanira-green transition flex items-center gap-1 text-tanira-green">
+                    <i class="fa-solid fa-shop"></i> Pasar Panen
+                </a>
+            </div>
+            <div class="flex items-center gap-4">
+                <button class="relative text-gray-400 hover:text-tanira-brown transition">
+                    <i class="fa-regular fa-bell text-xl"></i>
+                    <% if(stats.requests > 0) { %>
+                        <span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                    <% } %>
+                </button>
+                <div class="flex items-center gap-3 pl-4 border-l border-gray-200">
+                    <span class="text-xs font-bold text-tanira-dark"><%= user.name %></span>
+                    <a href="/auth/logout" class="text-gray-400 hover:text-red-500 transition" title="Keluar">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MOBILE HEADER -->
+    <div class="md:hidden sticky top-0 z-40 bg-white/95 backdrop-blur-sm px-4 py-4 flex justify-between items-center border-b border-gray-100">
+        <div class="flex items-center gap-2">
+            <img src="/logo/logo.png" 
+                         onerror="this.src='https://placehold.co/40x40/2f7d32/ffffff?text=T'"
+                         alt="Logo TANIRA" 
+                         class="w-10 h-10 rounded-lg object-contain p-1">
+            <span class="font-bold text-lg text-tanira-brown">TANIRA</span>
+        </div>
+        <div class="flex items-center gap-3">
+            <!-- Link shortcut ke Market di Header Mobile -->
+            <a href="/market" class="w-8 h-8 rounded-full bg-green-50 flex items-center justify-center text-tanira-green hover:bg-green-100 transition">
+                <i class="fa-solid fa-shop"></i>
+            </a>
+            <a href="/auth/logout" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-red-500">
+                <i class="fa-solid fa-right-from-bracket"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- MAIN DASHBOARD CONTENT -->
+    <main class="max-w-6xl mx-auto px-4 md:px-6 py-6 space-y-8">
+
+        <!-- 1. GREETING SECTION -->
+        <section class="animate-enter">
+            <div class="bg-gradient-to-r from-tanira-brown to-[#8D6E63] rounded-2xl p-6 md:p-8 text-white relative overflow-hidden shadow-lg">
+                <div class="absolute right-0 bottom-0 h-full w-1/3 opacity-10 pointer-events-none">
+                    <i class="fa-solid fa-gears text-[150px] absolute -right-4 -bottom-8"></i>
+                </div>
+                <div class="relative z-10">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <p class="text-orange-100 text-sm font-medium mb-1 uppercase tracking-wide">Dashboard Produsen</p>
+                            <h1 class="text-2xl md:text-3xl font-bold mb-2">Selamat datang, <%= user.name %></h1>
+                            <p class="text-orange-50 text-sm md:text-base max-w-md">
+                                Pantau ketersediaan alat dan kelola permintaan sewa dari petani lokal hari ini.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Link to Market inside Banner (Optional) -->
+                    <div class="mt-6">
+                        <a href="/market" class="inline-flex items-center gap-2 bg-white/20 backdrop-blur-md border border-white/30 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-white/30 transition">
+                            <i class="fa-solid fa-basket-shopping"></i> Lihat Kebutuhan Petani
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. QUICK INSIGHTS (Cards) -->
+        <section>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- Card 1: Active Tools -->
+                <div class="dashboard-card bg-white p-5 rounded-2xl shadow-soft animate-enter delay-100 border border-gray-50 flex items-center justify-between">
+                    <div>
+                        <p class="text-xs text-gray-400 uppercase tracking-wider font-bold mb-1">Alat Aktif</p>
+                        <h3 class="text-3xl font-bold text-tanira-dark"><%= stats.activeTools %></h3>
+                        <p class="text-xs text-tanira-green mt-1 font-medium"><i class="fa-solid fa-check-circle mr-1"></i>Siap disewa</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 text-xl">
+                        <i class="fa-solid fa-wrench"></i>
+                    </div>
+                </div>
+
+                <!-- Card 2: Requests -->
+                <div class="dashboard-card bg-white p-5 rounded-2xl shadow-soft animate-enter delay-200 border border-gray-50 flex items-center justify-between" onclick="window.location.href='/producer/requests'">
+                    <div>
+                        <p class="text-xs text-gray-400 uppercase tracking-wider font-bold mb-1">Sewa Berjalan</p>
+                        <h3 class="text-3xl font-bold text-tanira-dark"><%= stats.requests %></h3>
+                        <p class="text-xs text-tanira-accent mt-1 font-medium"><i class="fa-solid fa-clock mr-1"></i>Perlu dipantau</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center text-tanira-accent text-xl">
+                        <i class="fa-solid fa-user-clock"></i>
+                    </div>
+                </div>
+
+                <!-- Card 3: Status -->
+                <div class="dashboard-card bg-white p-5 rounded-2xl shadow-soft animate-enter delay-300 border border-gray-50 flex items-center justify-between">
+                    <div>
+                        <p class="text-xs text-gray-400 uppercase tracking-wider font-bold mb-1">Status Toko</p>
+                        <h3 class="text-xl font-bold text-tanira-green mt-1"><%= stats.storeStatus %></h3>
+                        <p class="text-xs text-gray-400 mt-1">Tutup otomatis jam 17:00</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-full bg-green-50 flex items-center justify-center text-tanira-green text-xl">
+                        <i class="fa-solid fa-store"></i>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. CTA UTAMA: ADD TOOL -->
+        <section class="animate-enter delay-300">
+            <div class="bg-white rounded-2xl shadow-soft border-l-4 border-tanira-accent p-6 flex flex-col md:flex-row items-center justify-between gap-6 group hover:border-tanira-green transition-colors duration-300">
+                <div class="flex items-start gap-4">
+                    <div class="w-12 h-12 bg-tanira-cream rounded-xl flex items-center justify-center text-tanira-brown text-2xl shrink-0 group-hover:bg-tanira-brown group-hover:text-white transition">
+                        <i class="fa-solid fa-plus"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-bold text-tanira-dark">Tambahkan Alat atau Produk</h2>
+                        <p class="text-sm text-tanira-gray max-w-md">
+                            Perluas jangkauan pasar Anda dengan menawarkan alat pertanian modern atau bibit unggul ke petani sekitar.
+                        </p>
+                    </div>
+                </div>
+
+                <a href="/producer/add-tool" class="w-full md:w-auto bg-tanira-brown hover:bg-[#5D4037] text-white font-bold py-3 px-6 rounded-xl shadow-lg shadow-tanira-brown/30 transition-all transform hover:-translate-y-1 whitespace-nowrap text-center">
+                    Tambahkan Alat
+                </a>
+            </div>
+        </section>
+
+        <!-- 4. ALAT TERBARU (List dengan Gambar) -->
+        <section class="animate-enter delay-400">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="font-bold text-lg text-tanira-dark">Alat Terbaru Saya</h2>
+                <a href="/producer/my-tools" class="text-sm text-tanira-brown font-semibold hover:underline">Lihat Semua</a>
+            </div>
+
+            <div class="space-y-4">
+                <% if (recentTools.length > 0) { %>
+                    <% recentTools.forEach(tool => { %>
+                    <div class="dashboard-card bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4 cursor-pointer hover:shadow-md transition" onclick="window.location.href='/producer/tool/<%= tool.id %>'">
+                        <!-- Tampilkan Gambar -->
+                        <div class="w-20 h-20 rounded-lg bg-gray-100 overflow-hidden shrink-0 relative">
+                            <img src="<%= tool.imageUrl || 'https://images.unsplash.com/photo-1590802778336-d760777e436f?q=80&w=200' %>" 
+                                 class="w-full h-full object-cover"
+                                 onerror="this.src='https://placehold.co/200x200?text=No+Image'">
+                            <div class="absolute bottom-0 left-0 right-0 bg-black/50 backdrop-blur-[2px] p-1">
+                                <p class="text-[8px] text-white text-center font-bold uppercase truncate"><%= tool.category %></p>
+                            </div>
+                        </div>
+
+                        <div class="flex-1">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h3 class="font-bold text-tanira-dark text-sm md:text-base line-clamp-1"><%= tool.toolName %></h3>
+                                    <p class="text-xs text-tanira-gray flex items-center gap-1 mt-0.5">
+                                        <i class="fa-solid fa-location-dot text-[10px]"></i> <%= tool.location %>
+                                    </p>
+                                </div>
+                                <% if(tool.availability) { %>
+                                    <span class="bg-green-100 text-tanira-green text-[10px] px-2 py-0.5 rounded-full font-bold">Aktif</span>
+                                <% } else { %>
+                                    <span class="bg-gray-100 text-gray-500 text-[10px] px-2 py-0.5 rounded-full font-bold">Non-Aktif</span>
+                                <% } %>
+                            </div>
+                            <div class="mt-2 flex justify-between items-end">
+                                <p class="text-sm font-bold text-tanira-brown"><%= helpers.formatRupiah(tool.pricePerDay) %> <span class="text-xs font-normal text-gray-400">/hari</span></p>
+                                <button class="text-xs font-bold text-gray-400 border border-gray-200 px-3 py-1.5 rounded-lg hover:text-tanira-dark hover:border-gray-400 transition">
+                                    Detail
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <% }) %>
+                <% } else { %>
+                    <!-- Empty State -->
+                    <div class="bg-white/50 border-2 border-dashed border-gray-300 rounded-2xl p-8 text-center">
+                        <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3 text-gray-400">
+                            <i class="fa-solid fa-box-open"></i>
+                        </div>
+                        <p class="text-tanira-gray text-sm">Belum ada alat yang ditambahkan.</p>
+                        <a href="/producer/add-tool" class="text-xs font-bold text-tanira-brown mt-2 inline-block hover:underline">Tambah Sekarang</a>
+                    </div>
+                <% } %>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MOBILE BOTTOM NAVIGATION -->
+    <div class="fixed bottom-0 w-full bg-white border-t border-gray-200 px-6 py-3 md:hidden z-50">
+        <div class="flex justify-between items-center">
+            <!-- Nav Item: Beranda (Active) -->
+            <a href="/producer" class="flex flex-col items-center gap-1 text-tanira-brown group">
+                <div class="w-10 h-8 rounded-full bg-tanira-cream flex items-center justify-center transition-all group-hover:-translate-y-1">
+                    <i class="fa-solid fa-house text-lg"></i>
+                </div>
+                <span class="text-[10px] font-bold">Beranda</span>
+            </a>
+
+            <!-- Nav Item: Market (NEW for Mobile) -->
+            <a href="/market" class="flex flex-col items-center gap-1 text-gray-400 group hover:text-tanira-green transition">
+                <div class="w-10 h-8 flex items-center justify-center transition-all group-hover:-translate-y-1">
+                    <i class="fa-solid fa-shop text-lg"></i>
+                </div>
+                <span class="text-[10px] font-medium text-tanira-green">Pasar</span>
+            </a>
+
+            <!-- Nav Item: Add Tool (Highlighted) -->
+            <a href="/producer/add-tool" class="flex flex-col items-center gap-1 text-gray-400 group -mt-6">
+                <div class="w-14 h-14 rounded-full bg-tanira-brown shadow-lg shadow-tanira-brown/40 flex items-center justify-center text-white transition-all transform group-active:scale-95 border-4 border-tanira-cream">
+                    <i class="fa-solid fa-plus text-xl"></i>
+                </div>
+                <span class="text-[10px] font-medium group-hover:text-tanira-brown">Tambah</span>
+            </a>
+
+            <!-- Nav Item: Pesanan Masuk -->
+            <a href="/producer/requests" class="flex flex-col items-center gap-1 text-gray-400 group hover:text-tanira-brown transition">
+                <div class="w-10 h-8 flex items-center justify-center transition-all group-hover:-translate-y-1">
+                    <i class="fa-solid fa-clipboard-list text-lg"></i>
+                </div>
+                <span class="text-[10px] font-medium">Pesanan</span>
+            </a>
+            
+            <!-- Nav Item: Alat Saya -->
+            <a href="/producer/my-tools" class="flex flex-col items-center gap-1 text-gray-400 group hover:text-tanira-brown transition">
+                <div class="w-10 h-8 flex items-center justify-center transition-all group-hover:-translate-y-1">
+                    <i class="fa-solid fa-layer-group text-lg"></i>
+                </div>
+                <span class="text-[10px] font-medium">Alat</span>
+            </a>
+        </div>
+    </div>
+
+</body>
+</html>

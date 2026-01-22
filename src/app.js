@@ -3,6 +3,10 @@ const express = require('express');
 const session = require('express-session'); // Import session
 const path = require('path');
 const authRoutes = require('./routes/authRoutes');
+const dashboardRoutes = require('./routes/dashboardRoutes');
+const smartPlantingRoutes = require('./routes/smartPlantingRoutes');
+const marketRoutes = require('./routes/marketRoutes');
+const producerRoutes = require('./routes/producerRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -35,6 +39,10 @@ app.use((req, res, next) => {
 
 // Routes
 app.use('/auth', authRoutes);
+app.use('/dashboard', dashboardRoutes);
+app.use('/smart-planting', smartPlantingRoutes);
+app.use('/market', marketRoutes);
+app.use('/producer', producerRoutes);
 
 app.get('/', (req, res) => {
     res.render('landing', { title: 'Beranda' });
