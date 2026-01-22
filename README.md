@@ -1,6 +1,3 @@
-Siap. Berikut versi **`README.md`** dalam format **Markdown siap pakai** (tinggal copy–paste ke file `README.md`):
-
-````md
 # 🌾 TANIRA  
 **Ekosistem Pertanian Digital Terpadu**
 
