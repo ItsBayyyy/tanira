@@ -90,50 +90,47 @@ exports.registerPage = (req, res) => {
 };
 
 exports.register = async (req, res) => {
-    try {
-        const { name, email, password, confirmPassword } = req.body;
+  try {
+    const { name, email, password, confirmPassword } = req.body;
 
-        if (password !== confirmPassword) {
-            return res.render('auth/register', { 
-                title: 'Daftar Akun',
-                error: 'Password dan konfirmasi password tidak cocok!' 
-            });
-        }
-
-        const existingUser = await prisma.user.findUnique({ where: { email } });
-        if (existingUser) {
-            return res.render('auth/register', { 
-                title: 'Daftar Akun',
-                error: 'Email ini sudah terdaftar. Silakan login.' 
-            });
-        }
-
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const token = crypto.randomBytes(32).toString('hex');
-
-        // Role default 'none' agar masuk onboarding nanti
-        await prisma.user.create({
-            data: {
-                name,
-                email,
-                password: hashedPassword,
-                role: 'none', 
-                verificationToken: token,
-                isVerified: false
-            }
-        });
-
-        await sendVerificationEmail(email, token);
-
-        res.render('auth/check-mail', { email });
-
-    } catch (error) {
-        console.error('Register Error:', error);
-        res.render('auth/register', { 
-            title: 'Daftar Akun',
-            error: 'Terjadi kesalahan pada sistem. Silakan coba lagi.' 
-        });
+    if (password !== confirmPassword) {
+      return res.render('auth/register', {
+        title: 'Daftar Akun',
+        error: 'Password dan konfirmasi password tidak cocok!'
+      });
     }
+
+    const existingUser = await prisma.user.findUnique({ where: { email } });
+    if (existingUser) {
+      return res.render('auth/register', {
+        title: 'Daftar Akun',
+        error: 'Email ini sudah terdaftar. Silakan login.'
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    await prisma.user.create({
+      data: {
+        name,
+        email,
+        password: hashedPassword,
+        role: 'none',
+        isVerified: true,          // 🔥 AUTO VERIFIED
+        verificationToken: null,  // 🔥 HAPUS TOKEN
+      }
+    });
+
+    // ⛔ JANGAN kirim email
+    return res.redirect('auth/verify-success');
+
+  } catch (error) {
+    console.error('Register Error:', error);
+    return res.render('auth/register', {
+      title: 'Daftar Akun',
+      error: 'Terjadi kesalahan pada sistem. Silakan coba lagi.'
+    });
+  }
 };
 
 // --- VERIFIKASI EMAIL ---
