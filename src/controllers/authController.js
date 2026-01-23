@@ -122,7 +122,7 @@ exports.register = async (req, res) => {
     });
 
     // ⛔ JANGAN kirim email
-    return res.redirect('/login');
+    return res.redirect('/auth/login');
 
   } catch (error) {
     console.error('Register Error:', error);
