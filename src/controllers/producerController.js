@@ -7,7 +7,7 @@ const fs = require('fs');
 // --- MULTER CONFIG (Upload Alat) ---
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        const dir = 'src/public/uploads/tools';
+        const dir = 'public/uploads/tools';
         if (!fs.existsSync(dir)) {
             fs.mkdirSync(dir, { recursive: true });
         }
@@ -33,9 +33,25 @@ const upload = multer({
 
 exports.uploadToolImage = upload.single('image');
 
-// Helper Format Rupiah
+// Helper Format
 const formatRupiah = (number) => {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number);
+};
+
+// Helper Time Ago (Sederhana)
+const timeAgo = (date) => {
+    const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+    let interval = seconds / 31536000;
+    if (interval > 1) return Math.floor(interval) + " tahun lalu";
+    interval = seconds / 2592000;
+    if (interval > 1) return Math.floor(interval) + " bulan lalu";
+    interval = seconds / 86400;
+    if (interval > 1) return Math.floor(interval) + " hari lalu";
+    interval = seconds / 3600;
+    if (interval > 1) return Math.floor(interval) + " jam lalu";
+    interval = seconds / 60;
+    if (interval > 1) return Math.floor(interval) + " menit lalu";
+    return Math.floor(seconds) + " detik lalu";
 };
 
 // GET /producer (Dashboard)
@@ -44,23 +60,57 @@ exports.getDashboard = async (req, res) => {
         const userId = req.session.userId;
         const user = await prisma.user.findUnique({ where: { id: userId } });
 
+        // 1. Data Alat
         const tools = await prisma.toolListing.findMany({
             where: { userId: userId },
             orderBy: { id: 'desc' }
         });
-
         const activeTools = tools.filter(t => t.availability).length;
-        const activeBookingsCount = 0; // Mockup dulu
+        
+        // 2. Data Sewa Berjalan (Active)
+        const activeBookingsCount = await prisma.toolBooking.count({
+            where: {
+                tool: { userId: userId },
+                status: 'booked',
+                endDate: { gte: new Date() }
+            }
+        });
+
+        // 3. DATA NOTIFIKASI (Permintaan Pending) - BARU
+        const pendingBookings = await prisma.toolBooking.findMany({
+            where: {
+                tool: { userId: userId },
+                status: 'pending'
+            },
+            include: { tool: true, user: true },
+            orderBy: { createdAt: 'desc' },
+            take: 5
+        });
+
+        // Mapping ke format notifikasi view
+        const notifications = pendingBookings.map(b => ({
+            id: b.id,
+            title: 'Permintaan Sewa Baru',
+            message: `${b.user.name} ingin menyewa ${b.tool.toolName}`,
+            time: timeAgo(b.createdAt),
+            read: false,
+            link: '/producer/requests' // Link ke halaman manajemen request
+        }));
 
         res.render('producer/dashboard', {
             title: 'Dashboard Produsen - TANIRA',
             user,
-            stats: { activeTools, requests: activeBookingsCount, storeStatus: "Buka" },
+            stats: {
+                activeTools,
+                requests: activeBookingsCount, // Ini untuk kartu statistik "Sewa Berjalan"
+                storeStatus: "Buka"
+            },
+            notifications, // Data notifikasi dikirim ke view
             recentTools: tools.slice(0, 3),
             helpers: { formatRupiah }
         });
     } catch (error) {
-        console.error(error);
+        console.error("Producer Dashboard Error:", error);
         res.status(500).send("Server Error");
     }
 };
@@ -98,7 +148,8 @@ exports.getAddToolPage = (req, res) => {
 exports.createTool = async (req, res) => {
     try {
         const userId = req.session.userId;
-        const { name, category, price, description, location, status } = req.body;
+        // Ambil transactionType dari body
+        const { name, category, price, description, location, status, transactionType } = req.body;
         
         const imageUrl = req.file ? `/uploads/tools/${req.file.filename}` : null;
         const isAvailable = status === 'Tersedia';
@@ -108,6 +159,8 @@ exports.createTool = async (req, res) => {
                 userId: userId,
                 toolName: name,
                 category: category,
+                // Simpan tipe transaksi (default 'sewa' jika kosong)
+                transactionType: transactionType || 'sewa', 
                 pricePerDay: parseFloat(price),
                 description: description,
                 location: location,
@@ -264,22 +317,18 @@ exports.getEditToolPage = async (req, res) => {
 exports.updateTool = async (req, res) => {
     try {
         const toolId = parseInt(req.params.id);
-        const { name, category, price, description, location, status } = req.body;
+        const { name, category, price, description, location, status, transactionType } = req.body;
         
-        // Cek permission lagi
-        // ...
-
-        // Prepare data update
         const updateData = {
             toolName: name,
             category,
+            transactionType, // Update tipe transaksi
             pricePerDay: parseFloat(price),
             description,
             location,
             availability: status === 'Tersedia'
         };
 
-        // Jika ada upload gambar baru, update pathnya
         if (req.file) {
             updateData.imageUrl = `/uploads/tools/${req.file.filename}`;
         }

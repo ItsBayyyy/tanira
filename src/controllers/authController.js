@@ -402,7 +402,8 @@ exports.submitOnboarding = async (req, res) => {
         req.session.user.name = updatedUser.name;
 
         req.session.save(() => {
-            res.json({ success: true, redirectUrl: '/dashboard' });
+            // UPDATE: Tambahkan query param ?tutorial=true
+            res.json({ success: true, redirectUrl: '/dashboard?tutorial=true' });
         });
 
     } catch (error) {

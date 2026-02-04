@@ -56,7 +56,7 @@
                 <section class="animate-enter">
                     <form id="toolForm" class="bg-white rounded-2xl shadow-soft p-6 md:p-8 space-y-6 border-t-4 border-tanira-brown" enctype="multipart/form-data">
                         
-                        <!-- FOTO -->
+                        <!-- FOTO (Sama) -->
                         <div>
                             <label class="block text-sm font-bold text-tanira-dark mb-2">Foto Alat</label>
                             <div class="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-tanira-brown transition bg-gray-50 cursor-pointer" onclick="document.getElementById('input-image').click()">
@@ -69,6 +69,25 @@
                                     <img id="image-preview-src" src="" class="w-full h-full object-cover">
                                     <button type="button" onclick="removeImage(event)" class="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center shadow-lg"><i class="fa-solid fa-times"></i></button>
                                 </div>
+                            </div>
+                        </div>
+
+                        <!-- TIPE TRANSAKSI (BARU) -->
+                        <div>
+                            <label class="block text-sm font-bold text-tanira-dark mb-3">Tipe Penawaran</label>
+                            <div class="flex gap-4">
+                                <label class="flex-1 cursor-pointer">
+                                    <input type="radio" name="transactionType" value="sewa" class="peer sr-only" checked onchange="togglePriceLabel()">
+                                    <div class="flex items-center justify-center gap-2 p-3 rounded-xl border border-gray-200 bg-white text-gray-500 peer-checked:border-tanira-brown peer-checked:bg-tanira-brown/10 peer-checked:text-tanira-brown transition font-bold">
+                                        <i class="fa-solid fa-clock"></i> Disewakan
+                                    </div>
+                                </label>
+                                <label class="flex-1 cursor-pointer">
+                                    <input type="radio" name="transactionType" value="jual" class="peer sr-only" onchange="togglePriceLabel()">
+                                    <div class="flex items-center justify-center gap-2 p-3 rounded-xl border border-gray-200 bg-white text-gray-500 peer-checked:border-green-600 peer-checked:bg-green-50 peer-checked:text-green-600 transition font-bold">
+                                        <i class="fa-solid fa-tag"></i> Dijual
+                                    </div>
+                                </label>
                             </div>
                         </div>
 
@@ -86,10 +105,12 @@
                                     <option value="Alat Berat">Alat Berat</option>
                                     <option value="Alsintan Ringan">Alsintan Ringan</option>
                                     <option value="Bibit & Pupuk">Bibit & Pupuk</option>
+                                    <option value="Jasa Tanam">Jasa Tanam</option>
                                 </select>
                             </div>
                             <div>
-                                <label class="block text-sm font-bold text-tanira-dark mb-2">Harga Sewa / Jual</label>
+                                <!-- Label berubah dinamis -->
+                                <label class="block text-sm font-bold text-tanira-dark mb-2" id="label-price">Harga Sewa per Hari</label>
                                 <div class="relative">
                                     <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-tanira-dark font-bold">Rp</div>
                                     <input type="number" id="input-price" name="price" placeholder="0" class="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-tanira-brown transition font-bold text-tanira-brown" oninput="updatePreview()">
@@ -97,13 +118,13 @@
                             </div>
                         </div>
 
-                        <!-- Deskripsi -->
+                        <!-- Deskripsi (Sama) -->
                         <div>
                             <label class="block text-sm font-bold text-tanira-dark mb-2">Deskripsi</label>
                             <textarea id="input-desc" name="description" rows="3" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none transition text-sm" placeholder="Spesifikasi, kondisi, dll..." oninput="updatePreview()"></textarea>
                         </div>
 
-                        <!-- Status & Lokasi -->
+                        <!-- Status & Lokasi (Sama) -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label class="block text-sm font-bold text-tanira-dark mb-2">Status</label>
@@ -122,7 +143,7 @@
                 </section>
             </div>
 
-            <!-- RIGHT COLUMN: PREVIEW -->
+            <!-- RIGHT COLUMN: PREVIEW (UPDATED) -->
             <div class="lg:col-span-5 space-y-6 lg:sticky lg:top-24">
                 <div class="flex items-center gap-2 mb-2">
                     <span class="w-2 h-2 rounded-full bg-tanira-green animate-pulse"></span>
@@ -135,6 +156,8 @@
                         <i id="card-placeholder-icon" class="fa-solid fa-image text-4xl"></i>
                         
                         <div class="absolute top-3 left-3 flex gap-2">
+                            <!-- Badge Tipe Transaksi -->
+                            <span id="preview-trans-type" class="bg-amber-100 text-amber-800 text-[10px] font-bold px-3 py-1 rounded-full shadow-sm">SEWA</span>
                             <span id="preview-type" class="bg-white/90 backdrop-blur text-tanira-brown text-xs font-bold px-3 py-1 rounded-full shadow-sm">Alat Berat</span>
                         </div>
                     </div>
@@ -148,7 +171,8 @@
                         <div class="flex items-end justify-between border-t border-gray-100 pt-4">
                             <div>
                                 <p class="text-xs text-gray-400 mb-0.5">Harga</p>
-                                <p class="text-xl font-bold text-tanira-brown" id="preview-price">Rp 0</p>
+                                <!-- Suffix Harga Dinamis -->
+                                <p class="text-xl font-bold text-tanira-brown"><span id="preview-price">Rp 0</span> <span id="preview-unit" class="text-xs text-gray-400 font-normal">/hari</span></p>
                             </div>
                         </div>
                     </div>
@@ -204,6 +228,25 @@
             }, 3000);
         }
 
+        function togglePriceLabel() {
+            const isSewa = document.querySelector('input[name="transactionType"]:checked').value === 'sewa';
+            const label = document.getElementById('label-price');
+            const unit = document.getElementById('preview-unit');
+            const badge = document.getElementById('preview-trans-type');
+
+            if (isSewa) {
+                label.innerText = "Harga Sewa per Hari";
+                unit.innerText = "/hari";
+                badge.innerText = "SEWA";
+                badge.className = "bg-amber-100 text-amber-800 text-[10px] font-bold px-3 py-1 rounded-full shadow-sm";
+            } else {
+                label.innerText = "Harga Jual Satuan";
+                unit.innerText = "";
+                badge.innerText = "JUAL";
+                badge.className = "bg-blue-100 text-blue-800 text-[10px] font-bold px-3 py-1 rounded-full shadow-sm";
+            }
+        }
+
         function updatePreview() {
             document.getElementById('preview-name').innerText = document.getElementById('input-name').value || "Nama Alat";
             document.getElementById('preview-type').innerText = document.getElementById('input-type').value;
@@ -215,6 +258,8 @@
             badge.innerText = status;
             if(status === 'Tersedia') badge.className = "bg-green-100 text-tanira-green text-[10px] px-2 py-0.5 rounded-full font-bold";
             else badge.className = "bg-red-100 text-red-600 text-[10px] px-2 py-0.5 rounded-full font-bold";
+            
+            togglePriceLabel(); // Ensure correct label on update
         }
 
         function previewImage(input) {

@@ -29,12 +29,18 @@
             }
         }
     </script>
+    <style>
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .snap-x-mandatory { scroll-snap-type: x mandatory; }
+        .snap-center { scroll-snap-align: center; }
+    </style>
 </head>
 <body class="bg-tanira-cream text-tanira-dark font-sans min-h-screen pb-24 md:pb-10">
 
     <!-- HEADER SEARCH -->
     <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100 px-4 py-4 shadow-sm">
-        <div class="max-w-5xl mx-auto flex items-center gap-4">
+        <div class="max-w-5xl mx-auto flex items-center gap-3 md:gap-4">
             <div class="flex-1 relative">
                 <!-- FORM PENCARIAN -->
                 <form action="/market" method="GET" class="relative w-full">
@@ -42,7 +48,7 @@
                            value="<%= typeof searchQuery !== 'undefined' ? searchQuery : '' %>"
                            class="w-full pl-10 pr-12 py-2.5 bg-gray-100 border-none rounded-full text-sm focus:ring-2 focus:ring-tanira-green focus:bg-white transition placeholder-gray-400">
                     
-                    <button type="submit" class="absolute left-3.5 top-2 text-gray-400 hover:text-tanira-green transition">
+                    <button type="submit" class="absolute left-3.5 top-3 text-gray-400 hover:text-tanira-green transition">
                         <i class="fa-solid fa-magnifying-glass"></i>
                     </button>
                     
@@ -54,15 +60,21 @@
                 </form>
             </div>
             
-            <a href="/market/orders" class="w-10 h-10 rounded-full bg-white border border-gray-200 text-tanira-dark flex items-center justify-center relative hover:border-tanira-green transition" title="Pesanan Saya">
-                <i class="fa-solid fa-receipt"></i>
+            <!-- Tombol Pesanan -->
+            <a href="/market/orders" class="w-10 h-10 rounded-full bg-white border border-gray-200 text-tanira-dark flex items-center justify-center relative hover:border-tanira-green transition group" title="Pesanan Saya">
+                <i class="fa-solid fa-receipt group-hover:text-tanira-green"></i>
+            </a>
+
+            <!-- TOMBOL LOGOUT (BARU) -->
+            <a href="/auth/logout" class="w-10 h-10 rounded-full bg-red-50 border border-red-100 text-red-500 flex items-center justify-center relative hover:bg-red-500 hover:text-white transition" title="Keluar">
+                <i class="fa-solid fa-right-from-bracket"></i>
             </a>
         </div>
     </header>
+    <main class="max-w-5xl mx-auto px-4 py-6 space-y-8">
 
-    <main class="max-w-5xl mx-auto px-4 py-6 space-y-6">
-
-        <!-- PROMO BANNER -->
+        <!-- PROMO BANNER (Hanya tampil jika tidak searching) -->
+        <% if (!searchQuery) { %>
         <section class="bg-tanira-green rounded-2xl p-6 text-white relative overflow-hidden shadow-lg">
             <div class="relative z-10">
                 <h2 class="text-2xl font-bold mb-1">Panen Raya Jagung 🌽</h2>
@@ -73,8 +85,61 @@
             </div>
             <i class="fa-solid fa-wheat-awn text-[120px] absolute -right-4 -bottom-8 text-white opacity-20"></i>
         </section>
+        <% } %>
 
-        <!-- LISTING GRID -->
+        <!-- SECTION TRENDING (Hanya tampil jika tidak searching dan ada data) -->
+        <% if (!searchQuery && trending && trending.length > 0) { %>
+        <section>
+            <div class="flex items-center gap-2 mb-4">
+                <div class="w-6 h-6 rounded-full bg-red-100 flex items-center justify-center animate-pulse">
+                    <i class="fa-solid fa-fire text-red-500 text-xs"></i>
+                </div>
+                <h3 class="font-bold text-lg text-tanira-dark">Sedang Hangat</h3>
+            </div>
+
+            <!-- Horizontal Scroll Container -->
+            <div class="flex gap-4 overflow-x-auto no-scrollbar snap-x-mandatory pb-4">
+                <% trending.forEach(item => { %>
+                <a href="/market/harvest/<%= item.id %>" class="min-w-[280px] snap-center bg-white rounded-2xl p-3 shadow-sm border border-gray-100 hover:shadow-md transition group block">
+                    <div class="relative h-32 rounded-xl bg-gray-100 overflow-hidden mb-3">
+                        <img src="<%= item.imageUrl || 'https://placehold.co/300x200?text=Produk' %>" 
+                             class="w-full h-full object-cover transform group-hover:scale-110 transition duration-500"
+                             onerror="this.src='https://placehold.co/300x200?text=No+Image'">
+                        
+                        <!-- Badge Trending -->
+                        <div class="absolute top-2 left-2 bg-red-500 text-white px-2 py-0.5 rounded text-[10px] font-bold shadow-sm flex items-center gap-1">
+                            <i class="fa-solid fa-fire"></i> Hot
+                        </div>
+                        
+                        <!-- Lokasi -->
+                        <div class="absolute bottom-2 left-2 bg-black/60 backdrop-blur px-2 py-0.5 rounded text-[10px] text-white flex items-center gap-1">
+                            <i class="fa-solid fa-location-dot"></i> <%= item.user.farmerProfile ? item.user.farmerProfile.location.split(',')[0] : 'Lokasi' %>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 class="font-bold text-tanira-dark truncate"><%= item.crop.name %></h4>
+                        <div class="flex justify-between items-end mt-2">
+                            <div>
+                                <p class="text-[10px] text-gray-400">Harga Pre-Order</p>
+                                <p class="text-sm font-bold text-tanira-green"><%= helpers.formatRupiah(item.price) %></p>
+                            </div>
+                            <!-- Mini Progress -->
+                            <div class="text-right">
+                                <p class="text-[10px] text-gray-400 mb-0.5"><%= item.progress %>% Terkumpul</p>
+                                <div class="w-16 h-1.5 bg-gray-100 rounded-full overflow-hidden ml-auto">
+                                    <div class="h-full bg-tanira-accent rounded-full" style="width: <%= item.progress %>%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+                <% }) %>
+            </div>
+        </section>
+        <% } %>
+
+        <!-- LISTING GRID (Utama) -->
         <section id="harvest-grid" class="scroll-mt-24">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="font-bold text-lg text-tanira-dark">
@@ -84,6 +149,7 @@
                         Rekomendasi Hari Ini
                     <% } %>
                 </h3>
+                
                 <a href="/market" class="text-xs text-tanira-green font-bold hover:underline">Lihat Semua</a>
             </div>
 
@@ -93,7 +159,7 @@
                     <a href="/market/harvest/<%= item.id %>" class="bg-white rounded-2xl p-4 shadow-sm border border-transparent hover:shadow-md hover:border-gray-100 transition block group">
                         <!-- Image -->
                         <div class="h-40 rounded-xl bg-gray-100 overflow-hidden relative mb-4">
-                            <img src="<%= item.imageUrl || 'https://images.unsplash.com/photo-1590802778336-d760777e436f?q=80&w=300' %>" 
+                            <img src="<%= item.imageUrl || 'https://placehold.co/300x200?text=Produk' %>" 
                                  class="w-full h-full object-cover transform group-hover:scale-110 transition duration-700"
                                  onerror="this.src='https://placehold.co/300x200?text=Tanaman'">
                             <span class="absolute top-2 left-2 bg-tanira-accent text-white px-2 py-1 rounded text-[10px] font-bold uppercase shadow-sm">
@@ -154,73 +220,48 @@
 
     </main>
 
-    <!-- MOBILE BOTTOM NAVIGATION (ADAPTIVE) -->
+    <!-- MOBILE BOTTOM NAV (ADAPTIVE) -->
     <div class="fixed bottom-0 w-full bg-white border-t border-gray-200 px-6 py-3 md:hidden z-50">
         <div class="flex justify-between items-center">
             
-            <% if (user && user.role === 'penyedia') { %>
-                <!-- BOTTOM BAR PENYEDIA -->
-                
-                <!-- 1. Beranda -->
+            <% if (typeof user !== 'undefined' && user.role === 'penyedia') { %>
+                <!-- MENU PENYEDIA -->
                 <a href="/producer" class="flex flex-col items-center gap-1 text-gray-400 group hover:text-tanira-brown transition">
-                    <div class="w-10 h-8 flex items-center justify-center transition-all group-hover:-translate-y-1">
-                        <i class="fa-solid fa-house text-lg"></i>
-                    </div>
+                    <i class="fa-solid fa-house text-lg"></i>
                     <span class="text-[10px] font-medium">Beranda</span>
                 </a>
-
-                <!-- 2. Market (Active) -->
                 <a href="/market" class="flex flex-col items-center gap-1 text-tanira-green group">
-                    <div class="w-10 h-8 flex items-center justify-center transition-all group-hover:-translate-y-1">
-                        <i class="fa-solid fa-shop text-lg"></i>
-                    </div>
+                    <i class="fa-solid fa-shop text-lg"></i>
                     <span class="text-[10px] font-bold">Pasar</span>
                 </a>
-
-                <!-- 3. Add Tool -->
                 <a href="/producer/add-tool" class="flex flex-col items-center gap-1 text-gray-400 group -mt-6">
                     <div class="w-14 h-14 rounded-full bg-tanira-brown shadow-lg shadow-tanira-brown/40 flex items-center justify-center text-white transition-all transform group-active:scale-95 border-4 border-tanira-cream">
                         <i class="fa-solid fa-plus text-xl"></i>
                     </div>
                     <span class="text-[10px] font-medium group-hover:text-tanira-brown">Tambah</span>
                 </a>
-
-                <!-- 4. Pesanan Masuk -->
                 <a href="/producer/requests" class="flex flex-col items-center gap-1 text-gray-400 group hover:text-tanira-brown transition">
-                    <div class="w-10 h-8 flex items-center justify-center transition-all group-hover:-translate-y-1">
-                        <i class="fa-solid fa-clipboard-list text-lg"></i>
-                    </div>
+                    <i class="fa-solid fa-clipboard-list text-lg"></i>
                     <span class="text-[10px] font-medium">Pesanan</span>
                 </a>
-                
-                <!-- 5. Alat Saya -->
                 <a href="/producer/my-tools" class="flex flex-col items-center gap-1 text-gray-400 group hover:text-tanira-brown transition">
-                    <div class="w-10 h-8 flex items-center justify-center transition-all group-hover:-translate-y-1">
-                        <i class="fa-solid fa-layer-group text-lg"></i>
-                    </div>
+                    <i class="fa-solid fa-layer-group text-lg"></i>
                     <span class="text-[10px] font-medium">Alat</span>
                 </a>
-
             <% } else { %>
-                <!-- BOTTOM BAR PEMBELI (DEFAULT) -->
-                
-                <!-- 1. Pasar (Active) -->
+                <!-- MENU PEMBELI -->
                 <a href="/market" class="flex flex-col items-center gap-1 text-tanira-green group">
                     <i class="fa-solid fa-store text-lg"></i>
                     <span class="text-[10px] font-bold">Pasar</span>
                 </a>
-
-                <!-- 2. Pesanan Saya -->
                 <a href="/market/orders" class="flex flex-col items-center gap-1 text-gray-400 group hover:text-tanira-green transition">
                     <i class="fa-solid fa-receipt text-lg"></i>
                     <span class="text-[10px] font-medium">Pesanan</span>
                 </a>
-
-                <!-- 3. Keluar -->
-                <a href="/auth/logout" class="flex flex-col items-center gap-1 text-gray-400 group hover:text-red-500 transition">
+                <!-- <a href="/auth/logout" class="flex flex-col items-center gap-1 text-gray-400 group hover:text-red-500 transition">
                     <i class="fa-solid fa-right-from-bracket text-lg"></i>
                     <span class="text-[10px] font-medium">Keluar</span>
-                </a>
+                </a> -->
             <% } %>
 
         </div>
