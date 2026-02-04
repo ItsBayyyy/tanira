@@ -92,9 +92,22 @@
                             <img src="<%= tool.imageUrl || 'https://images.unsplash.com/photo-1590802778336-d760777e436f?q=80&w=300' %>" 
                                  class="w-full h-full object-cover transform hover:scale-110 transition duration-700"
                                  onerror="this.src='https://placehold.co/300x200?text=No+Image'">
+                            
+                            <!-- Badge Kategori -->
                             <span class="absolute top-2 left-2 bg-white/90 backdrop-blur text-tanira-brown px-2 py-1 rounded text-[10px] font-bold uppercase shadow-sm">
                                 <%= tool.category %>
                             </span>
+
+                            <!-- UPDATE: Badge Tipe Transaksi (Kanan Atas) -->
+                            <% if (tool.transactionType === 'jual') { %>
+                                <span class="absolute top-2 right-2 bg-blue-600 text-white px-2 py-1 rounded text-[10px] font-bold uppercase shadow-sm">
+                                    DIJUAL
+                                </span>
+                            <% } else { %>
+                                <span class="absolute top-2 right-2 bg-amber-500 text-white px-2 py-1 rounded text-[10px] font-bold uppercase shadow-sm">
+                                    SEWA
+                                </span>
+                            <% } %>
                         </div>
 
                         <!-- Info -->
@@ -111,18 +124,25 @@
                             
                             <div class="flex items-center justify-between border-t border-gray-50 pt-3">
                                 <div>
-                                    <p class="text-[10px] text-gray-400 uppercase font-bold">Harga Sewa</p>
-                                    <p class="text-sm font-bold text-tanira-brown"><%= helpers.formatRupiah(tool.pricePerDay) %> <span class="text-[10px] font-normal text-gray-400">/hari</span></p>
+                                    <!-- UPDATE: Label Harga -->
+                                    <p class="text-[10px] text-gray-400 uppercase font-bold">
+                                        <%= tool.transactionType === 'jual' ? 'Harga Beli' : 'Harga Sewa' %>
+                                    </p>
+                                    <p class="text-sm font-bold text-tanira-brown">
+                                        <%= helpers.formatRupiah(tool.pricePerDay) %> 
+                                        <!-- Satuan -->
+                                        <span class="text-[10px] font-normal text-gray-400">
+                                            <%= tool.transactionType === 'jual' ? '' : '/hari' %>
+                                        </span>
+                                    </p>
                                 </div>
                                 
-                                <!-- Link Button -->
                                 <a href="/market/tools/<%= tool.id %>" class="w-8 h-8 rounded-full bg-tanira-brown text-white flex items-center justify-center hover:bg-[#5D4037] transition shadow-md shadow-tanira-brown/20">
                                     <i class="fa-solid fa-plus"></i>
                                 </a>
                             </div>
                         </div>
                         
-                        <!-- Full Card Link Overlay -->
                         <a href="/market/tools/<%= tool.id %>" class="absolute inset-0 z-10"></a>
                     </div>
                     <% }) %>
@@ -158,6 +178,13 @@
                 <span class="text-[10px] font-medium">Beranda</span>
             </a>
 
+            <a href="/market/tools/history" class="flex flex-col items-center gap-1 text-gray-400 group hover:text-tanira-green transition" id="nav-mytools-mobile">
+                <div class="w-10 h-8 flex items-center justify-center transition-all group-hover:-translate-y-1">
+                    <i class="fa-solid fa-tractor text-lg"></i>
+                </div>
+                <span class="text-[10px] font-medium">Riwayat Alat</span>
+            </a>
+
             <!-- Tanam (Center Big Button) -->
             <a href="/smart-planting" class="flex flex-col items-center gap-1 text-gray-400 group -mt-6">
                 <div class="w-14 h-14 rounded-full bg-tanira-green shadow-lg shadow-tanira-green/40 flex items-center justify-center text-white transition-all transform group-active:scale-95 border-4 border-tanira-cream">
@@ -178,7 +205,7 @@
                 <div class="w-10 h-8 rounded-full bg-green-50 flex items-center justify-center transition-all group-hover:-translate-y-1">
                     <i class="fa-solid fa-toolbox text-lg"></i>
                 </div>
-                <span class="text-[10px] font-bold">Tools</span>
+                <span class="text-[10px] font-bold">Alat</span>
             </a>
         </div>
     </div>

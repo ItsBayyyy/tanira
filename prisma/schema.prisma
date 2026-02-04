@@ -42,6 +42,7 @@ enum OrderStatus {
 enum BookingStatus {
   booked
   completed
+  pending
 }
 
 enum ReviewTarget {
@@ -164,6 +165,7 @@ model ToolListing {
   toolName     String
 
   category     String    @default("Alat Berat") // Kategori alat
+  transactionType String @default("sewa") 
   description  String?   @db.Text
   imageUrl     String?   // Foto alat
   
@@ -183,6 +185,7 @@ model ToolBooking {
   startDate DateTime
   endDate   DateTime
   status    BookingStatus
+  createdAt DateTime      @default(now())
 
   tool ToolListing @relation(fields: [toolId], references: [id])
   user User        @relation(fields: [userId], references: [id])

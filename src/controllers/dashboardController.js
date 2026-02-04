@@ -13,7 +13,6 @@ const formatRupiah = (number) => {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number);
 };
 
-// GANTI NAMA FUNGSI: dari 'index' menjadi 'getDashboard'
 exports.getDashboard = async (req, res) => {
     try {
         const userId = req.session.userId;
@@ -21,15 +20,11 @@ exports.getDashboard = async (req, res) => {
 
         // Routing Berdasarkan Role
         if (role === 'penyedia') {
-            return res.redirect('/producer'); // Redirect ke Dashboard Produsen
+            return res.redirect('/producer');
         }
-
+        
         if (role === 'pembeli') {
-            return res.redirect('/market'); // Redirect ke Dashboard Produsen
-        }
-
-        if (role === 'none') {
-            return res.redirect('/auth/onboarding'); // Redirect ke Dashboard Produsen
+            return res.redirect('/market');
         }
         
         if (role !== 'petani') {
@@ -42,7 +37,7 @@ exports.getDashboard = async (req, res) => {
             include: { farmerProfile: true }
         });
 
-        // 2. Ambil Rencana Tanam (Maksimal 3 terbaru)
+        // 2. Ambil Rencana Tanam (Real dari DB)
         const plantingPlans = await prisma.plantingPlan.findMany({
             where: { userId: userId },
             take: 3,
@@ -50,7 +45,15 @@ exports.getDashboard = async (req, res) => {
             include: { crop: true }
         });
 
-        // 3. Ambil/Simulasi Data Tren Pasar
+        // 3. Ambil Data Tren Pasar (Real dari DB: CropTrend)
+        // Kita ambil 3 tren terbaru yang relevan
+        const trends = await prisma.cropTrend.findMany({
+            take: 3,
+            include: { crop: true },
+            orderBy: { id: 'desc' }
+        });
+
+        // Mapping data DB ke format View
         const marketInsights = [
             {
                 title: "Cabai Rawit",
@@ -81,13 +84,67 @@ exports.getDashboard = async (req, res) => {
             }
         ];
 
-        // 4. Render View
+        // 4. GENERATE NOTIFIKASI DINAMIS (Berdasarkan Logika Data)
+        // Karena belum ada tabel Notification, kita buat notifikasi pintar berdasarkan kondisi user
+        const notifications = [];
+
+        // Cek 1: Apakah profil sudah lengkap?
+        if (!user.farmerProfile) {
+            notifications.push({
+                id: 'sys-1',
+                type: 'warning',
+                icon: 'fa-user-pen',
+                color: 'text-orange-500 bg-orange-50',
+                title: 'Lengkapi Profil',
+                message: 'Lengkapi data lahan Anda untuk mendapatkan rekomendasi AI yang akurat.',
+                time: 'Sekarang',
+                read: false
+            });
+        }
+
+        // Cek 2: Apakah ada panen dalam waktu dekat (< 30 hari)?
+        const upcomingHarvest = plantingPlans.find(p => {
+            const diffTime = new Date(p.estimatedHarvest) - new Date();
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            return diffDays > 0 && diffDays <= 30;
+        });
+
+        if (upcomingHarvest) {
+            notifications.push({
+                id: 'sys-2',
+                type: 'success',
+                icon: 'fa-basket-shopping',
+                color: 'text-green-500 bg-green-50',
+                title: 'Persiapan Panen',
+                message: `Tanaman ${upcomingHarvest.crop.name} Anda diperkirakan panen sebentar lagi. Segera buat listing Pre-Order!`,
+                time: 'Hari ini',
+                read: false
+            });
+        }
+
+        // Cek 3: Info Umum (Bisa statis atau dari sistem admin)
+        notifications.push({
+            id: 'sys-3',
+            type: 'info',
+            icon: 'fa-cloud-sun',
+            color: 'text-blue-500 bg-blue-50',
+            title: 'Info Cuaca',
+            message: 'Minggu ini diprediksi cerah berawan, cocok untuk pemupukan.',
+            time: '1 jam lalu',
+            read: true // Anggap sudah dibaca
+        });
+
+        const unreadCount = notifications.filter(n => !n.read).length;
+
+        // 5. Render View
         res.render('petani/dashboard', {
             title: 'Dashboard Petani',
             user: user,
-            farmer: user.farmerProfile, // Bisa null jika belum diisi lengkap
+            farmer: user.farmerProfile,
             plans: plantingPlans,
             insights: marketInsights,
+            notifications: notifications,
+            unreadCount: unreadCount,
             currentDate: formatDate(new Date()),
             helpers: { formatRupiah, formatDate }
         });

@@ -63,13 +63,18 @@
                 <div id="tool-card-<%= tool.id %>" class="tool-card bg-white rounded-2xl p-4 shadow-sm border border-transparent flex flex-col md:flex-row gap-4 hover:shadow-md transition">
                     <!-- Thumbnail -->
                     <div class="w-full md:w-32 h-40 md:h-32 rounded-xl bg-gray-100 overflow-hidden shrink-0 relative">
-                        <!-- Tambahkan ID ke gambar untuk manipulasi grayscale -->
                         <img id="img-<%= tool.id %>" 
                              src="<%= tool.imageUrl || 'https://images.unsplash.com/photo-1590802778336-d760777e436f?q=80&w=200' %>" 
                              class="w-full h-full object-cover <%= tool.availability ? '' : 'grayscale' %> transition duration-500"
                              onerror="this.src='https://placehold.co/200x200?text=No+Image'">
+                        
                         <div class="absolute top-2 left-2 bg-white/90 backdrop-blur px-2 py-0.5 rounded text-[10px] font-bold text-gray-600 uppercase">
                             <%= tool.category %>
+                        </div>
+
+                        <!-- UPDATE: Badge Tipe Transaksi -->
+                        <div class="absolute bottom-2 left-2 px-2 py-0.5 rounded text-[9px] font-bold uppercase shadow-sm text-white <%= tool.transactionType === 'jual' ? 'bg-blue-600' : 'bg-amber-500' %>">
+                            <%= tool.transactionType === 'jual' ? 'Jual' : 'Sewa' %>
                         </div>
                     </div>
 

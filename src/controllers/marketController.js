@@ -141,22 +141,12 @@ exports.getMarketplace = async (req, res) => {
     try {
         const { search, category } = req.query;
 
-        // Build Query Filter
-        const whereClause = {
-            status: 'active'
-        };
-
+        // 1. QUERY UTAMA (LISTING GRID)
+        const whereClause = { status: 'active' };
         if (search) {
-            // Mencari berdasarkan nama tanaman (melalui relasi crop)
-            whereClause.crop = {
-                name: {
-                    contains: search
-                    // mode: 'insensitive' // (Opsional untuk Postgres)
-                }
-            };
+            whereClause.crop = { name: { contains: search } };
         }
 
-        // Ambil Listing
         const listings = await prisma.harvestListing.findMany({
             where: whereClause,
             include: {
@@ -166,21 +156,44 @@ exports.getMarketplace = async (req, res) => {
             orderBy: { id: 'desc' }
         });
 
-        // Hitung Progress (booked qty)
-        const listingsWithStats = await Promise.all(listings.map(async (listing) => {
-            // Hitung total quantity yang sudah dipesan
-            const orders = await prisma.order.findMany({ where: { listingId: listing.id } });
-            const booked = orders.reduce((sum, o) => sum + o.quantity, 0);
-            
-            // Hitung persentase (max 100%)
-            const progress = listing.quantity > 0 ? Math.min(Math.round((booked / listing.quantity) * 100), 100) : 0;
-            
-            return { ...listing, progress };
-        }));
+        // 2. QUERY TRENDING (TOP 5 BY ORDERS COUNT)
+        // Hanya ambil jika tidak sedang searching
+        let trendingListings = [];
+        if (!search) {
+            trendingListings = await prisma.harvestListing.findMany({
+                where: { status: 'active' },
+                include: {
+                    crop: true,
+                    user: { include: { farmerProfile: true } },
+                    orders: true // Butuh ini untuk sorting manual jika DB tidak support relation count sort
+                },
+                // Prisma sort by relation count:
+                orderBy: {
+                    orders: {
+                        _count: 'desc'
+                    }
+                },
+                take: 5
+            });
+        }
+
+        // Helper Function untuk hitung stats
+        const calculateStats = async (items) => {
+            return Promise.all(items.map(async (listing) => {
+                const orders = await prisma.order.findMany({ where: { listingId: listing.id } });
+                const booked = orders.reduce((sum, o) => sum + o.quantity, 0);
+                const progress = listing.quantity > 0 ? Math.min(Math.round((booked / listing.quantity) * 100), 100) : 0;
+                return { ...listing, progress };
+            }));
+        };
+
+        const listingsWithStats = await calculateStats(listings);
+        const trendingWithStats = await calculateStats(trendingListings);
 
         res.render('buyer/marketplace', {
             title: 'Marketplace Panen - TANIRA',
             listings: listingsWithStats,
+            trending: trendingWithStats, // Kirim data trending ke view
             searchQuery: search || '',
             helpers: { formatRupiah, formatDate }
         });
